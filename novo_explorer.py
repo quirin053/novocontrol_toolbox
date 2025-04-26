@@ -1,3 +1,13 @@
+"""
+v1.0 (04.2025)
+@author: Quirin Möller (ge26deb)
+Plot Explorer for Novocontrol Measurements
+
+run with: python -m Novocontrol_Toolbox.novo_explorer
+
+
+"""
+
 import sys
 import os
 from pathlib import Path
@@ -15,7 +25,7 @@ from matplotlib.figure import Figure
 
 matplotlib.use("QtAgg")
 
-import novo_toolbox as nt
+from . import novo_toolbox as nt
 
 matplotlib.rcParams['savefig.format'] = 'svg'
 

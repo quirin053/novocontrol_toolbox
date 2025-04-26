@@ -27,7 +27,7 @@ import pandas as pd
 import re
 import pathlib
 from itertools import repeat
-import basicE as be
+from . import basicE as be
 
 class Measurement:
     def __init__(self, filepath=None, measurement_name=None):
@@ -196,7 +196,7 @@ class MeasurementGroup():
     # the mean deviation over the frequqency (or other parameter TODO)
     @property
     def mean_deviation_series(self):
-        df_mean = self.mean(ignore_negatives=True).df.copy()
+        df_mean = self.mean(ignore_negatives=False).df.copy()
         df_mean.sort_values(by="Freq.", inplace=True)
         df_mean.set_index("Freq.", inplace=True)
         diffs = []
