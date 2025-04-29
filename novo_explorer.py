@@ -10,7 +10,7 @@ run with: python -m Novocontrol_Toolbox.novo_explorer
 
 import sys
 import os
-from pathlib import Path
+from pathlib import Path, PurePath
 
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtGui import QIcon
@@ -29,6 +29,9 @@ from . import novo_toolbox as nt
 
 matplotlib.rcParams['savefig.format'] = 'svg'
 
+script_dir = Path(__file__).parent
+
+
 class MplCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
@@ -40,9 +43,11 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.setWindowTitle("Plot Explorer")
 
-        self.folder_icon = QIcon("./icons/folder.png")
-        self.folder_open_icon = QIcon("./icons/folder_open.png")  # New icon for opened folders
-        self.file_icon = QIcon("./icons/file.png")
+        application_icon = QIcon(str(script_dir / "icons/ne_icon.ico"))
+
+        self.folder_icon = QIcon(str(script_dir / "icons/folder.png"))
+        self.folder_open_icon = QIcon(str(script_dir / "icons/folder_open.png"))
+        self.file_icon = QIcon(str(script_dir / "icons/file.png"))
 
         self.selected_measurement = None
         self.parameter_to_plot = "|Eps|" # TODO init otherwise
@@ -144,6 +149,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Set main widget
         self.setCentralWidget(main_widget)
+
+        self.setWindowIcon(application_icon)  # Set window icon
+
 
 
     def open_folder(self):
@@ -323,6 +331,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
+    # app.setWindowIcon(application_icon)  # Set application icon
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
