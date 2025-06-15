@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Feb 25 09:37:31 2025
-v2.0 (04.2025)
+v2.1 (05.2025)
 
 @author: Quirin Möller (ge26deb)
 
@@ -35,6 +35,7 @@ class Measurement:
         self.einheiten = None
         self.metadata = {}
         self.name = None
+        self.plot_kwargs = {}
         if filepath:
             if not isinstance(filepath, pathlib.WindowsPath | pathlib.PosixPath): # relevant? wenn, dann in import verschieben
                 self.filepath = pathlib.PurePath(filepath)
@@ -47,10 +48,18 @@ class Measurement:
                 self.name = self.filepath.stem
 
     def plot(self, parameter_to_plot, ax, color=None, x="Freq.", label=None, **kwargs):
+        # print('plotting', self.name)
         # color = "#3070b3" # TUM Blau
         if label is None:
             label = self.name
-        self.df.plot(x=x, y=parameter_to_plot, ax=ax, label=label, color=color, **kwargs)
+        elif label == "hide":
+            self.plot_kwargs['legend'] = False
+        if 'color' in kwargs:
+            color = kwargs.pop('color')
+        if 'color' in self.plot_kwargs:
+            color = self.plot_kwargs.pop('color')
+        # print(self.plot_kwargs)
+        self.df.plot(x=x, y=parameter_to_plot, ax=ax, label=label, color=color, **self.plot_kwargs, **kwargs)
 
     def mean(self, ignore_negatives=False):
         if ignore_negatives:
@@ -156,6 +165,9 @@ class MeasurementGroup():
         return mean_measurement
     
     def plot_singles(self, parameter_to_plot, ax, colors=None, x="Freq.", labels=None, **kwargs):
+        # print('plotting singles')
+        if 'color' in self.plot_kwargs:
+            colors = self.plot_kwargs.pop('color')
         if colors is None or isinstance(colors, str):
             colors = repeat(colors)
         elif len(colors) != len(self) and isinstance(colors, list):
@@ -164,10 +176,14 @@ class MeasurementGroup():
             raise TypeError("Colors must be a list of strings or a single string")
         if labels is None:
             labels = repeat(None)
+        elif labels == "group_Name":
+            labels = [self.group_Name] + ['hide'] * (len(self) - 1)
+        elif isinstance(labels, str):
+            labels = [labels] + ['hide'] * (len(self) - 1)
         elif len(labels) != len(self):
             raise ValueError("Number of labels does not match number of measurements")
         for m, color, label in zip(self, colors, labels):
-            m.plot(parameter_to_plot, ax, color=color, x=x, label=label, **kwargs, **self.plot_kwargs)
+            m.plot(parameter_to_plot, ax, color=color, x=x, label=label, **self.plot_kwargs, **kwargs)
 
     def plot_mean_bounds(self, parameter_to_plot, ax, color="#3070b3", x="Freq.", label=None, ignore_negatives=False):
         if label is None:
@@ -332,12 +348,35 @@ def stacked(measurements):
     m_stacked.df["Sig''"] = be.leitfaehigkeit_reihe([m.df["Sig''"] for m in measurements], [m.metadata['Thickness'] for m in measurements])
 
     return m_stacked
+    
+    
+def Abweichung(base, second):
+    """
+    Calculate the relative deviation of two measurements.
+    The base measurement is the reference.
+    """
+    if not isinstance(base, Measurement) or not isinstance(second, Measurement):
+        raise TypeError("Both inputs must be of type Measurement")
+    
+    if base.df.shape != second.df.shape:
+        raise ValueError("Both measurements must have the same shape")
+
+    # sort both dataframes by "Freq." and reset index
+    base.df = base.df.sort_values(by="Freq.").reset_index(drop=True)
+    second.df = second.df.sort_values(by="Freq.").reset_index(drop=True)
+    
+    # calculate relative deviation
+    rel_dev = (second.df - base.df) / base.df
+    rel_dev = rel_dev.abs()  # absolute value of the relative deviation
+    rel_dev.name = f"{base.name} - {second.name} relative deviation"
+    
+    return rel_dev
 
     
 parameter_names = {"Freq.": "Frequenz",
                     "Temp.": "Temperatur",
                     "Eps'": "Eps'",
-                    "Eps''": "Eps''",
+                    "Eps''": "Permittivität Imaginärteil",
                     "|Eps|": "Permittivität",
                     "Sig'": "Leitfähigkeit Realteil",
                     "Sig''": "Sig''",
@@ -346,4 +385,4 @@ parameter_names = {"Freq.": "Frequenz",
                     "M Temp": "gemessene Temperatur"}
 
 if __name__ == "main":
-    print("novo import tool v2.0")
+    print("novo toolbox v2.1")
