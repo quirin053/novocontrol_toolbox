@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 import pathlib
 # from .. import novotoolbox as ni
-from Novocontrol_Toolbox import novo_toolbox as ni
+from novocontrol_toolbox import novo_toolbox as ni
 # TODO use pytest instead of unittest
 
 class TestBasicImport(unittest.TestCase):
