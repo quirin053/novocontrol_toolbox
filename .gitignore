@@ -9,3 +9,5 @@ Novocontrol_Toolbox.code-workspace
 
 # Ignore Conda environment files
 *.condas
+
+dist/
